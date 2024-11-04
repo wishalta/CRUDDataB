@@ -25,13 +25,13 @@ def print_info():
     print("-----------------------------------------------")
 
 def print_items():
-    query = "select * from items"
+    query = "select * from dmo_items"
     c.execute(query)
     result = c.fetchall()
     print(result)
 
 def get_item(id):
-    query = "select * from items where id = " + id
+    query = "select * from dmo_items where id = " + id
     c.execute(query)
     res = c.fetchone()
     item = dict(
@@ -58,7 +58,33 @@ def add_item():
     conn.commit()
 
 def edit_item():
+    print("Pasirinkite prekes id kuria redaguosite")
+    id = input()
+    item = get_item(id)
+    print(item)
+    print("Prekes pavadinimas")
+    title1 = input()
+    title = title1 if title1 != "" else item['title']
+    print("Tiekejo kaina")
+    m_price1 = input()
+    m_price = m_price1 if m_price1 != "" else item['manufacturer_price']
+    print("Pardavimo kaina")
+    s_price1 = input()
+    s_price = s_price1 if s_price1 != "" else item['sale_price']
+    print("Prekiu kiekis")
+    quantity1 = input()
+    quantity = quantity1 if quantity1 != "" else item['quantity']
+    query =  (f"UPDATE `dmo_items` SET `title`=%s,`manufacturer_price`=%s,`sale_price`=%s,`quantity`=%s WHERE `id`= %s;")
+    print(query)
+    c.execute(query,(title, m_price, s_price, quantity, id))
+    conn.commit()
 
+def delete_item():
+    print("Pasirinkite prekes id kuria norite salinti")
+    id = input()
+    query = 'DELETE FROM `dmo_items` WHERE `id` = %s'
+    c.execute(query, (id))
+    conn.commit()
 
 while True:
     print_info()
@@ -70,4 +96,8 @@ while True:
         case '2':
             add_item()
         case '3':
+            edit_item()
+        case '4':
+            delete_item()
+        case '5':
             exit(1)
