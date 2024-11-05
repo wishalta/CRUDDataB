@@ -1,4 +1,6 @@
 import mysql.connector
+import datetime
+import random
 
 conn = mysql.connector.connect(
     host="127.0.0.1",# localhost
@@ -16,8 +18,8 @@ def print_info():
     print("3. Prekės redagavimas")
     print("4. Prekės šalinimas")
     print("5. Pirkti preke")
-    print("6. Daugiausiai pelno sugeneravusi prekė")
-    print("7. Ataskaita periode")
+    print("6. ")
+    print("7. EXIT")
     print("8. Išaldyti pinigai")
     print("9. Būsima pardaviminė vertė")
     print("10. Prognozuojamas pelnas viską išpardavus")
@@ -111,6 +113,14 @@ def delete_item():
 #     id = input()
 #     # return id
 
+def random_date(s, e):
+    return s + datetime.timedelta(
+        seconds=random.randint(0, int((e - s).total_seconds())),
+    )
+start = datetime.datetime(2022, 1, 1)
+end = datetime.datetime(2024, 12, 31)
+
+
 def buy_item():
     print('Kuria preke perkate?')
     id = input()
@@ -141,6 +151,20 @@ def buy_item():
     c.execute(query, (item['quantity'], id))
     conn.commit()
 
+    get_item(id)
+    item_id = item['id']
+    buy_amount = many
+    manufacturer_price = item['manufacturer_price']
+    sale_price = item['sale_price']
+    start = datetime.datetime(2022, 1, 1)
+    end = datetime.datetime(2024, 12, 31)
+    created_at = random_date(start, end)
+    query = ('INSERT INTO `dmo_payments`(`item_id`, `quantity`, `manufacturer_price`, `sale_price`, `created_at`) VALUES (%s, %s, %s, %s, %s)')
+    print(query)
+    c.execute(query,(item_id, buy_amount, manufacturer_price, sale_price, created_at))
+    conn.commit()
+    return many
+
 
 while True:
     print_info()
@@ -157,5 +181,7 @@ while True:
             delete_item()
         case '5':
             buy_item()
-        case '6':
+        # case '6':
+        #     add_payment()
+        case '7':
             exit(1)
