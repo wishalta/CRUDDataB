@@ -18,7 +18,7 @@ def print_info():
     print("3. Prekės redagavimas")
     print("4. Prekės šalinimas")
     print("5. Pirkti preke")
-    print("6. ")
+    print("6. Populiariausia preke")
     print("7. EXIT")
     print("8. Išaldyti pinigai")
     print("9. Būsima pardaviminė vertė")
@@ -117,13 +117,12 @@ def random_date(s, e):
     return s + datetime.timedelta(
         seconds=random.randint(0, int((e - s).total_seconds())),
     )
-start = datetime.datetime(2022, 1, 1)
-end = datetime.datetime(2024, 12, 31)
 
 
 def buy_item():
     print('Kuria preke perkate?')
     id = input()
+    # global id
     item = get_item(id)
     print(item)
     print('Kiek perkate vienetu?')
@@ -140,17 +139,17 @@ def buy_item():
             print(f'Turime {item['quantity']} vienetu')
             print('Kiek noretumet pirkti?')
             many = int(input())
-            item['quantity'] = item['quantity'] - many
             if many > item['quantity']:
                 continue
             if many <= item['quantity']:
+                item['quantity'] = item['quantity'] - many
                 print(f'Sekmingai isigijote {many} vienetu/-us')
                 break
     query = (F"UPDATE `dmo_items` SET `quantity`= %s WHERE `id`=%s")
     print(query)
     c.execute(query, (item['quantity'], id))
     conn.commit()
-
+                                                                                                        # transaction(id) tokiu budu galima ji permetineti per funkcijas
     get_item(id)
     item_id = item['id']
     buy_amount = many
@@ -164,6 +163,18 @@ def buy_item():
     c.execute(query,(item_id, buy_amount, manufacturer_price, sale_price, created_at))
     conn.commit()
     return many
+
+def favorite_item():
+    query = (' SELECT item_id, SUM(quantity) AS total_quantity '
+             'FROM dmo_payments GROUP BY item_id ORDER BY total_quantity DESC Limit 1; ')
+    c.execute(query)
+    result = c.fetchone()
+    if result:
+        item_id, total_quantity = result
+        print(f"The most sold item is item_id: {item_id} with a total quantity of {total_quantity} sold.")
+    else:
+        print("No sales data found.")
+    c.close()
 
 
 while True:
@@ -181,7 +192,7 @@ while True:
             delete_item()
         case '5':
             buy_item()
-        # case '6':
-        #     add_payment()
+        case '6':
+            favorite_item()
         case '7':
             exit(1)
