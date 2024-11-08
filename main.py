@@ -19,9 +19,9 @@ def print_info():
     print("4. Prekės šalinimas")
     print("5. Pirkti preke")
     print("6. Populiariausia preke")
-    print("7. EXIT")
-    print("8. Išaldyti pinigai")
-    print("9. Būsima pardaviminė vertė")
+    print("7. Didziausias vienos prekes pelnas")
+    print("8. Statistika")
+    print("9. Exit")
     print("10. Prognozuojamas pelnas viską išpardavus")
     print("11. Išeiti iš programos")
     print("-----------------------------------------------")
@@ -164,6 +164,7 @@ def buy_item():
     conn.commit()
     return many
 
+
 def favorite_item():
     query = (' SELECT item_id, SUM(quantity) AS total_quantity '
              'FROM dmo_payments GROUP BY item_id ORDER BY total_quantity DESC Limit 1; ')
@@ -174,8 +175,40 @@ def favorite_item():
         print(f"The most sold item is item_id: {item_id} with a total quantity of {total_quantity} sold.")
     else:
         print("No sales data found.")
-    c.close()
 
+
+def biggest_income_from_one_item():
+    query = (' SELECT item_id, SUM(quantity) AS total_quantity, manufacturer_price AS low_cost, sale_price AS high_cost '
+             'FROM dmo_payments GROUP BY item_id')
+    c.execute(query)
+    result = c.fetchall()
+    max_profit = 0
+    item_of_this_profit = None
+    for one in result:
+        profit = float((one[3] - one[2]) * one[1])
+        # print(f'id:{one[0]}, grynas pelnas:{profit}$')
+        if profit > max_profit:
+            max_profit = profit
+            item_of_this_profit = one[0]
+        else:
+            continue
+    print(f'Item: {item_of_this_profit}, generated income of {max_profit} dollars')
+
+# income = sale_price - manufacturer_price * quantity
+# sort by income
+
+def statistics():
+    query = (' SELECT item_id, SUM(quantity) AS total_quantity, manufacturer_price, sale_price, created_at '
+             'FROM dmo_payments GROUP BY item_id')
+    c.execute(query)
+    result = c.fetchall()
+    data = []
+    for item in result:
+        answer1 = item[4]
+        data.append(answer1)
+    print(answer1)
+
+# pasirenkame metus, ir atvaizduojame pamėnesiui pardavimų statistika: kiek prekių parduota, kiek gauta pajamų, koks pelnas?
 
 while True:
     print_info()
@@ -195,4 +228,8 @@ while True:
         case '6':
             favorite_item()
         case '7':
+            biggest_income_from_one_item()
+        case '8':
+            statistics()
+        case '9':
             exit(1)
